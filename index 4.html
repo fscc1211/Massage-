@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caddens Nice | Massage Reception</title>
+<style>
+:root{--navy:#183b56;--teal:#2a9d8f;--gold:#e9b44c;--cream:#fffaf0;--ink:#243447;--muted:#6b7280;--line:#e5e7eb;--red:#d9534f}
+*{box-sizing:border-box}body{margin:0;background:#f3f6f8;color:var(--ink);font:15px/1.45 Arial,"Noto Sans Thai",sans-serif}
+header{background:linear-gradient(115deg,#173b56,#286b70);color:white;padding:22px max(18px,calc((100% - 1180px)/2));}
+header h1{margin:0;font-size:25px}header p{margin:5px 0 0;color:#e3f3f1}
+main{max-width:1180px;margin:20px auto;padding:0 16px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.tab{border:0;border-radius:10px;padding:10px 15px;background:white;color:var(--navy);font-weight:700;cursor:pointer}.tab.active{background:var(--navy);color:white}
+.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:16px;box-shadow:0 3px 12px #1b36500b}
+h2{font-size:19px;margin:0 0 14px;color:var(--navy)}h3{margin:0 0 8px;font-size:16px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+label{display:block;font-weight:700;font-size:13px;color:#52616b;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 11px;border:1px solid #cfd8df;border-radius:9px;background:white;font:inherit;color:var(--ink)}
+button.primary{background:var(--teal);color:white;border:0;border-radius:9px;padding:11px 17px;font-weight:700;cursor:pointer}
+button.secondary{background:#edf2f5;color:var(--navy);border:0;border-radius:9px;padding:9px 12px;font-weight:700;cursor:pointer}
+button.danger{background:#fff0ef;color:#a33b37;border:0;border-radius:8px;padding:7px 10px;cursor:pointer}
+.actions{display:flex;gap:9px;align-items:end;margin-top:13px;flex-wrap:wrap}
+.staff-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.staff-card{border-radius:13px;padding:15px;border:1px solid var(--line);background:#fff}
+.staff-card{border-top:5px solid #4d96c8}
+.staff-head{display:flex;justify-content:space-between;align-items:center}.staff-letter{font-size:24px;font-weight:800}
+.status{font-size:12px;padding:5px 9px;border-radius:20px;background:#e6f5ed;color:#24724b;font-weight:700}
+.status.busy{background:#fff2d8;color:#93620a}
+.next-time{font-size:25px;font-weight:800;margin:10px 0 2px}
+.subtle{color:var(--muted);font-size:13px}
+.queue-list{display:flex;flex-direction:column;gap:8px}
+.queue-item{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:10px}
+.rank{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#eaf2f6;color:var(--navy);font-weight:800}
+.pill{font-size:12px;border-radius:20px;padding:4px 8px;background:#edf2f5;white-space:nowrap}
+.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:760px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f1f5f8;color:var(--navy);font-size:13px}
+.hidden{display:none!important}.empty{padding:18px;text-align:center;color:var(--muted);background:#f8fafb;border-radius:10px}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+.history-filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}.history-filters>div{min-width:150px;flex:1}
+@media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.staff-grid{grid-template-columns:1fr}.panel{padding:14px}header h1{font-size:21px}}
+@media(max-width:430px){.grid{grid-template-columns:1fr 1fr}.queue-item{grid-template-columns:35px 1fr}.queue-item .pill{grid-column:2}}
+</style>
+</head>
+<body>
+<header><h1>Caddens Nice · Massage Reception</h1><p>ระบบจัดคิวพนักงาน M / P / C และบันทึกประวัติการนวด</p></header>
+<main>
+<div class="tabs">
+<button class="tab active" data-tab="dashboard">หน้าจัดคิว</button>
+<button class="tab" data-tab="booking">เพิ่มคิวลูกค้า</button>
+<button class="tab" data-tab="history">ประวัติการนวด</button>
+<button class="tab" data-tab="settings">ตั้งค่าระบบ</button>
+</div>
+
+<section id="dashboard">
+<div class="panel">
+<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap">
+<h2>ลำดับพนักงานที่ว่างก่อน</h2>
+<div style="max-width:190px"><label for="viewDate">วันที่แสดง</label><input id="viewDate" type="date"></div>
+</div>
+<div id="staffCards" class="staff-grid"></div>
+</div>
+<div class="panel">
+<h2>คิวถัดไปตามลำดับเวลาว่าง</h2>
+<div id="availabilityQueue" class="queue-list"></div>
+<p class="note">เวลาว่างคำนวณจากเวลาเริ่มนวดจริง + ระยะเวลานวด + เวลาพัก โดยไม่ยึดเวลานัด</p>
+</div>
+<div class="panel">
+<h2>ตารางคิววันนี้</h2>
+<div class="table-wrap"><table><thead><tr><th>ประเภท</th><th>เวลานัด / มาถึง</th><th>เริ่มนวดจริง</th><th>พนักงาน</th><th>ลูกค้า</th><th>บริการ</th><th>ระยะเวลา</th><th>จบ</th><th>พัก</th><th>รับคิวถัดไป</th><th>สถานะ</th><th></th></tr></thead><tbody id="todayRows"></tbody></table></div>
+</div>
+</section>
+
+<section id="booking" class="hidden">
+<div class="panel">
+<h2>เพิ่มคิวลูกค้า</h2>
+<form id="bookingForm">
+<div class="grid">
+<div><label for="bookDate">วันที่</label><input id="bookDate" type="date" required></div>
+<div><label for="bookingType">ประเภทลูกค้า</label><select id="bookingType"><option value="walkin">Walk-in</option><option value="appointment">Appointment / จองล่วงหน้า</option></select></div>
+<div><label for="appointmentTime">เวลานัด / เวลามาถึงร้าน</label><input id="appointmentTime" type="time" required></div>
+<div><label for="startTime">เวลาเริ่มนวดจริง</label><input id="startTime" type="time" required></div>
+<div><label for="customer">ชื่อลูกค้า / เลขคิว</label><input id="customer" placeholder="เช่น Walk-in 01"></div>
+<div><label for="staff">พนักงาน</label><select id="staff" required><option value="">เลือกพนักงาน</option><option>M</option><option>P</option><option>C</option></select></div>
+<div><label for="service">ประเภทนวด</label><select id="service" required></select></div>
+<div><label for="duration">ระยะเวลานวด (นาที)</label><select id="duration" required></select></div>
+<div><label for="breakMins">เวลาพักหลังคิว (นาที)</label><select id="breakMins"><option value="0">ไม่พัก</option><option value="5">5 นาที</option><option value="10">10 นาที</option><option value="15">15 นาที</option></select></div>
+<div><label for="memo">หมายเหตุ</label><input id="memo" placeholder="เช่น ลูกค้าขอแรงเบา"></div>
+</div>
+<div class="actions"><button class="primary" type="submit">บันทึกคิว</button><button class="secondary" type="reset">ล้างข้อมูล</button></div>
+<p class="note">บันทึกเวลานัดหรือเวลาที่ลูกค้ามาถึงแยกจากเวลาเริ่มนวดจริง ระบบคำนวณคิวถัดไปจากเวลาเริ่มนวดจริง รวมเวลาพักหลังนวด</p>
+</form>
+</div>
+</section>
+
+<section id="history" class="hidden">
+<div class="panel">
+<h2>ประวัติการนวดของพนักงาน</h2>
+<div class="history-filters">
+<div><label for="historyStaff">พนักงาน</label><select id="historyStaff"><option value="all">ทุกคน</option><option>M</option><option>P</option><option>C</option></select></div>
+<div><label for="historyDate">วันที่</label><input id="historyDate" type="date"></div>
+<div><label for="historyService">ประเภทนวด</label><select id="historyService"><option value="all">ทุกบริการ</option></select></div>
+</div>
+<div class="actions" style="margin:0 0 12px">
+<button class="danger" type="button" onclick="deleteFilteredHistory()">ลบประวัติตามตัวกรอง</button>
+<span class="note">เลือกพนักงานหรือวันที่ด้านบน แล้วกดเพื่อลบประวัติที่ตรงกับตัวกรอง</span>
+</div>
+<div class="table-wrap"><table><thead><tr><th>วันที่</th><th>ประเภท</th><th>เวลานัด / มาถึง</th><th>เริ่มนวดจริง</th><th>พนักงาน</th><th>ลูกค้า</th><th>ประเภทนวด</th><th>นาที</th><th>เวลาจบ</th><th>สถานะ</th><th></th></tr></thead><tbody id="historyRows"></tbody></table></div>
+<p class="note">ประวัติจะถูกเก็บไว้ในเบราว์เซอร์เครื่องนี้โดยอัตโนมัติ (local storage)</p>
+</div>
+</section>
+
+<section id="settings" class="hidden">
+<div class="panel">
+<h2>จัดการรายชื่อพนักงาน</h2>
+<div class="grid">
+<div><label for="newStaffName">ชื่อพนักงาน</label><input id="newStaffName" placeholder="เช่น Amy หรือ พี่แอน"></div>
+<div class="actions"><button class="primary" type="button" onclick="addStaff()">เพิ่มพนักงาน</button></div>
+</div>
+<div id="staffSettingsList" class="queue-list" style="margin-top:14px"></div>
+<p class="note">แก้ไขชื่อพนักงานจะเปลี่ยนชื่อในประวัติเดิมทั้งหมดด้วย</p>
+</div>
+<div class="panel">
+<h2>จัดการประเภทการนวด</h2>
+<div class="grid">
+<div><label for="newServiceName">ชื่อบริการ</label><input id="newServiceName" placeholder="เช่น Relaxing Massage"></div>
+<div><label for="newServiceDurations">ระยะเวลา (นาที คั่นด้วยจุลภาค)</label><input id="newServiceDurations" placeholder="เช่น 30,45,60,90"></div>
+<div class="actions"><button class="primary" type="button" onclick="addService()">เพิ่มประเภทนวด</button></div>
+</div>
+<div id="serviceSettingsList" class="queue-list" style="margin-top:14px"></div>
+<p class="note">แก้ไขชื่อบริการจะเปลี่ยนชื่อในประวัติเดิมทั้งหมดด้วย ส่วนระยะเวลาที่เลือกได้ปรับได้ในแต่ละประเภท</p>
+</div>
+</section>
+</main>
+<script>
+const SERVICES = {
+ "Head, Neck & Shoulder":[15,20,30],
+ "Foot Massage":[30,45,60,75,90,120],
+ "Thai Deep Tissue":[30,45,60,75,90,120],
+ "Thai Oil Massage":[30,45,60,75,90,120],
+ "Aromatherapy":[30,45,60,75,90,120],
+ "Pregnancy Massage":[30,45,60,75,90,120],
+ "Remedial & Deep Tissue":[30,45,60,75,90,120],
+ "Whole body Hot Stone + Hot Coconut Oil":[60,75,90,120]
+};
+const KEY='caddensNiceMassageBookingsV1';
+const SETTINGS_KEY='caddensNiceMassageSettingsV1';
+let bookings=JSON.parse(localStorage.getItem(KEY)||'[]');
+const defaults={staff:['M','P','C'],services:SERVICES};
+let settings=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'null')||JSON.parse(JSON.stringify(defaults));
+settings.staff=settings.staff||['M','P','C']; settings.services=settings.services||JSON.parse(JSON.stringify(SERVICES));
+Object.keys(SERVICES).forEach(k=>{if(!settings.services[k])settings.services[k]=SERVICES[k]});
+function saveSettings(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));refreshOptions();render();renderSettings();}
+const $=id=>document.getElementById(id);
+const today=()=>new Date().toLocaleDateString('en-CA');
+const addMinutes=(hhmm,mins)=>{let [h,m]=hhmm.split(':').map(Number);let d=new Date(2000,0,1,h,m+mins);return d.toTimeString().slice(0,5)};
+const mins=hhmm=>{if(!hhmm)return 0;let [h,m]=hhmm.split(':').map(Number);return h*60+m};
+const fmt=n=>String(Math.floor(n/60)%24).padStart(2,'0')+':'+String(n%60).padStart(2,'0');
+const endOf=b=>addMinutes(b.start,b.duration);
+const nextOf=b=>addMinutes(b.start,b.duration+b.breakMins);
+const appointmentOf=b=>b.appointmentTime||b.start;
+const typeLabel=b=>b.bookingType==='appointment'?'Appointment':'Walk-in';
+function save(){localStorage.setItem(KEY,JSON.stringify(bookings));render();}
+function dateBookings(date){return bookings.filter(b=>b.date===date&&b.status!=='Cancelled');}
+function staffAvailability(staff,date){
+ const list=dateBookings(date).filter(b=>b.staff===staff).sort((a,b)=>a.start.localeCompare(b.start));
+ if(!list.length)return {staff,time:'09:00',label:'ยังไม่มีคิว',count:0,last:null};
+ const last=list[list.length-1];
+ return {staff,time:nextOf(last),label:'รับคิวถัดไปได้',count:list.length,last};
+}
+function render(){
+ const date=$('viewDate').value||today();
+ const availability=settings.staff.map(s=>staffAvailability(s,date)).sort((a,b)=>a.time.localeCompare(b.time));
+ $('staffCards').innerHTML=availability.map((a,i)=>`<article class="staff-card ${a.staff}">
+ <div class="staff-head"><span class="staff-letter">พนักงาน ${esc(a.staff)}</span><span class="status ${a.last?'busy':''}">${a.last?'มีคิวแล้ว':'ว่าง'}</span></div>
+ <div class="subtle">${a.last?'รับคิวถัดไปได้เวลา':'พร้อมรับคิวได้ตั้งแต่'}</div>
+ <div class="next-time">${a.time}</div><div class="subtle">วันนี้ ${a.count} คิว ${a.last?`· คิวล่าสุด ${a.last.start}–${endOf(a.last)}`:''}</div>
+ </article>`).join('');
+ $('availabilityQueue').innerHTML=availability.map((a,i)=>`<div class="queue-item"><div class="rank">${i+1}</div><div><b>พนักงาน ${esc(a.staff)}</b><div class="subtle">${a.label}</div></div><span class="pill">${a.time}</span></div>`).join('');
+ const rows=dateBookings(date).sort((a,b)=>a.start.localeCompare(b.start)||a.staff.localeCompare(b.staff));
+ $('todayRows').innerHTML=rows.length?rows.map(b=>`<tr><td><span class="pill">${typeLabel(b)}</span></td><td>${appointmentOf(b)}</td><td><b>${b.start}</b></td><td><b>${b.staff}</b></td><td>${esc(b.customer||'-')}</td><td>${esc(b.service)}</td><td>${b.duration} นาที</td><td>${endOf(b)}</td><td>${b.breakMins} นาที</td><td><b>${nextOf(b)}</b></td><td>${b.status||'Booked'}</td><td><button class="danger" onclick="cancelBooking('${b.id}')">ยกเลิก</button></td></tr>`).join(''):`<tr><td colspan="12"><div class="empty">ยังไม่มีคิวในวันนี้</div></td></tr>`;
+ renderHistory();
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function cancelBooking(id){if(confirm('ยกเลิกคิวนี้ใช่ไหม? ประวัติจะยังคงอยู่')){let b=bookings.find(x=>x.id===id);if(b)b.status='Cancelled';save();}}
+function renderHistory(){
+ const staff=$('historyStaff').value,date=$('historyDate').value,service=$('historyService').value;
+ let list=[...bookings].filter(b=>(staff==='all'||b.staff===staff)&&(!date||b.date===date)&&(service==='all'||b.service===service)).sort((a,b)=>b.date.localeCompare(a.date)||b.start.localeCompare(a.start));
+ $('historyRows').innerHTML=list.length?list.map(b=>`<tr><td>${b.date}</td><td>${typeLabel(b)}</td><td>${appointmentOf(b)}</td><td>${b.start}–${endOf(b)}</td><td><b>${b.staff}</b></td><td>${esc(b.customer||'-')}</td><td>${esc(b.service)}</td><td>${b.duration}</td><td>${nextOf(b)}</td><td>${b.status||'Booked'}</td><td><button class="danger" onclick="deleteHistoryRecord('${b.id}')">ลบ</button></td></tr>`).join(''):`<tr><td colspan="11"><div class="empty">ไม่พบประวัติการนวด</div></td></tr>`;
+}
+function deleteHistoryRecord(id){
+ const b=bookings.find(x=>x.id===id);
+ if(!b)return;
+ if(confirm(`ยืนยันลบประวัติของพนักงาน ${b.staff} วันที่ ${b.date} เวลา ${b.start} ใช่ไหม? การลบนี้ย้อนกลับไม่ได้`)){
+   bookings=bookings.filter(x=>x.id!==id);
+   save();
+ }
+}
+function deleteFilteredHistory(){
+ const staff=$('historyStaff').value,date=$('historyDate').value,service=$('historyService').value;
+ const matches=bookings.filter(b=>(staff==='all'||b.staff===staff)&&(!date||b.date===date)&&(service==='all'||b.service===service));
+ if(!matches.length){alert('ไม่มีประวัติที่ตรงกับตัวกรอง');return;}
+ const staffLabel=staff==='all'?'ทุกพนักงาน':`พนักงาน ${staff}`;
+ const dateLabel=date?` วันที่ ${date}`:' ทุกวันที่';
+ if(confirm(`ต้องการลบประวัติ ${matches.length} รายการของ${staffLabel}${dateLabel} ใช่ไหม? การลบนี้ย้อนกลับไม่ได้`)){
+   const ids=new Set(matches.map(b=>b.id));
+   bookings=bookings.filter(b=>!ids.has(b.id));
+   save();
+ }
+}
+function fillDurations(){
+ const service=$('service').value,select=$('duration'),current=select.value;
+ select.innerHTML=(settings.services[service]||[]).map(n=>`<option value="${n}">${n} นาที</option>`).join('');
+ if([...select.options].some(o=>o.value===current))select.value=current;
+}
+function refreshOptions(){
+ const service=$('service'),historyService=$('historyService'),staff=$('staff'),historyStaff=$('historyStaff');
+ const oldService=service.value,oldHistoryService=historyService.value,oldStaff=staff.value,oldHistoryStaff=historyStaff.value;
+ service.innerHTML=''; historyService.innerHTML='<option value="all">ทุกบริการ</option>';
+ Object.keys(settings.services).forEach(n=>{service.add(new Option(n,n));historyService.add(new Option(n,n));});
+ staff.innerHTML='<option value="">เลือกพนักงาน</option>';historyStaff.innerHTML='<option value="all">ทุกคน</option>';
+ settings.staff.forEach(n=>{staff.add(new Option(n,n));historyStaff.add(new Option(n,n));});
+ if([...service.options].some(o=>o.value===oldService))service.value=oldService;
+ if([...historyService.options].some(o=>o.value===oldHistoryService))historyService.value=oldHistoryService;
+ if([...staff.options].some(o=>o.value===oldStaff))staff.value=oldStaff;
+ if([...historyStaff.options].some(o=>o.value===oldHistoryStaff))historyStaff.value=oldHistoryStaff;
+ fillDurations();
+}
+function renderSettings(){
+ $('staffSettingsList').innerHTML=settings.staff.map((n,i)=>`<div class="queue-item"><div class="rank">${i+1}</div><div><b>${esc(n)}</b></div><button class="secondary" onclick="renameStaff(${i})">แก้ไขชื่อ</button><button class="danger" onclick="removeStaff(${i})">ลบ</button></div>`).join('')||'<div class="empty">ยังไม่มีพนักงาน</div>';
+ $('serviceSettingsList').innerHTML=Object.entries(settings.services).map(([n,d],i)=>`<div class="queue-item"><div class="rank">${i+1}</div><div><b>${esc(n)}</b><div class="subtle">${d.join(', ')} นาที</div></div><button class="secondary" onclick="editService(${JSON.stringify(n).replace(/"/g,'&quot;')})">แก้ไข</button><button class="danger" onclick="removeService(${JSON.stringify(n).replace(/"/g,'&quot;')})">ลบ</button></div>`).join('')||'<div class="empty">ยังไม่มีประเภทนวด</div>';
+}
+function addStaff(){const n=$('newStaffName').value.trim();if(!n)return alert('กรุณาใส่ชื่อพนักงาน');if(settings.staff.includes(n))return alert('มีชื่อนี้แล้ว');settings.staff.push(n);$('newStaffName').value='';saveSettings();}
+function renameStaff(i){const old=settings.staff[i],n=prompt('แก้ไขชื่อพนักงาน',old);if(!n||!n.trim())return;const name=n.trim();if(settings.staff.includes(name)&&name!==old)return alert('มีชื่อนี้แล้ว');settings.staff[i]=name;bookings.forEach(b=>{if(b.staff===old)b.staff=name});localStorage.setItem(KEY,JSON.stringify(bookings));saveSettings();}
+function removeStaff(i){const n=settings.staff[i];if(!confirm(`ลบพนักงาน ${n} ออกจากรายการใช่ไหม? ประวัติเดิมจะยังเก็บไว้`))return;settings.staff.splice(i,1);saveSettings();}
+function addService(){const n=$('newServiceName').value.trim(),d=$('newServiceDurations').value.split(',').map(x=>Number(x.trim())).filter(x=>Number.isInteger(x)&&x>0&&x<=300);if(!n||!d.length)return alert('กรุณาใส่ชื่อบริการและระยะเวลาเป็นนาที เช่น 30,45,60');if(settings.services[n])return alert('มีบริการชื่อนี้แล้ว');settings.services[n]=[...new Set(d)].sort((a,b)=>a-b);$('newServiceName').value='';$('newServiceDurations').value='';saveSettings();}
+function editService(old){const n=prompt('แก้ไขชื่อประเภทนวด',old);if(!n||!n.trim())return;const name=n.trim();if(name!==old&&settings.services[name])return alert('มีบริการชื่อนี้แล้ว');const d=prompt('ระยะเวลาที่เลือกได้ (นาที คั่นด้วยจุลภาค)',settings.services[old].join(','));if(d===null)return;const durations=d.split(',').map(x=>Number(x.trim())).filter(x=>Number.isInteger(x)&&x>0&&x<=300);if(!durations.length)return alert('กรุณาระบุระยะเวลาให้ถูกต้อง');const vals=[...new Set(durations)].sort((a,b)=>a-b);delete settings.services[old];settings.services[name]=vals;bookings.forEach(b=>{if(b.service===old)b.service=name});localStorage.setItem(KEY,JSON.stringify(bookings));saveSettings();}
+function removeService(n){if(!confirm(`ลบประเภทนวด ${n} จากรายการใช่ไหม? ประวัติเดิมจะยังเก็บไว้`))return;delete settings.services[n];saveSettings();}
+$('service').addEventListener('change',fillDurations);refreshOptions();renderSettings();
+$('viewDate').value=today();$('bookDate').value=today();$('appointmentTime').value='';$('startTime').value='';
+$('bookingForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const b={id:crypto.randomUUID?crypto.randomUUID():String(Date.now()+Math.random()),date:$('bookDate').value,bookingType:$('bookingType').value,appointmentTime:$('appointmentTime').value,start:$('startTime').value,customer:$('customer').value.trim(),staff:$('staff').value,service:$('service').value,duration:Number($('duration').value),breakMins:Number($('breakMins').value),memo:$('memo').value.trim(),status:'Booked'};
+ const start=mins(b.start),finish=start+b.duration+b.breakMins;
+ const conflict=bookings.find(x=>x.date===b.date&&x.staff===b.staff&&x.status!=='Cancelled'&&start<mins(x.start)+x.duration+x.breakMins&&finish>mins(x.start));
+ if(conflict){alert(`คิวซ้อนกับพนักงาน ${conflict.staff} เวลา ${conflict.start}–${nextOf(conflict)} กรุณาเลือกเวลาอื่นหรือพนักงานคนอื่น`);return;}
+ bookings.push(b);save();e.target.reset();$('bookDate').value=today();$('appointmentTime').value='';$('startTime').value='';$('service').selectedIndex=0;fillDurations();document.querySelector('[data-tab="dashboard"]').click();alert('บันทึกคิวเรียบร้อย'); 
+});
+$('viewDate').addEventListener('change',render);
+['historyStaff','historyDate','historyService'].forEach(id=>$(id).addEventListener('change',renderHistory));
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));
+ ['dashboard','booking','history','settings'].forEach(id=>$(id).classList.toggle('hidden',id!==btn.dataset.tab));
+ if(btn.dataset.tab==='history')renderHistory(); if(btn.dataset.tab==='settings')renderSettings();
+}));
+render();
+</script>
+</body>
+</html>

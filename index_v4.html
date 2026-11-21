@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Reception · Massage Queue Manager</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#17212b;--muted:#687684;--line:#e3e8ed;--green:#16865b;--greenbg:#e8f6ef;--orange:#b66a13;--orangebg:#fff3df;--blue:#2867b2;--bluebg:#eaf2ff;--red:#bd3d42;--shadow:0 5px 20px #13283b0b}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{background:#172b36;color:white;padding:17px 16px 14px;position:sticky;top:0;z-index:5}header .top{display:flex;align-items:center;justify-content:space-between;gap:10px}header h1{font-size:19px;margin:0}header p{margin:3px 0 0;color:#c8d4dc;font-size:12px}
+main{max-width:1100px;margin:auto;padding:14px 13px 90px}.tabs{display:flex;gap:7px;overflow:auto;padding:3px 0 12px;position:sticky;top:69px;background:var(--bg);z-index:4}.tab{border:1px solid var(--line);background:white;border-radius:22px;padding:9px 14px;white-space:nowrap;font-weight:650;color:#53616d}.tab.active{background:#172b36;color:white;border-color:#172b36}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;margin-bottom:12px;box-shadow:var(--shadow)}.panel h2{font-size:17px;margin:0 0 12px}.muted{color:var(--muted);font-size:12px}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.stat{background:#f6f8fa;border-radius:12px;padding:12px}.stat strong{display:block;font-size:23px}.stat span{font-size:11px;color:var(--muted)}
+button,.btn{border:0;border-radius:10px;padding:11px 13px;background:#172b36;color:white;font-weight:650;font-size:14px;cursor:pointer}button.secondary{background:#edf1f4;color:#24323c}button.green{background:var(--green)}button.orange{background:#a96212}button.red{background:#fff0f0;color:var(--red);border:1px solid #f1d4d4}button.small{padding:7px 9px;font-size:12px}.actions{display:flex;gap:7px;flex-wrap:wrap}
+label{display:block;font-size:12px;color:#53616d;font-weight:650;margin:0 0 5px}input,select,textarea{width:100%;border:1px solid #d6dee5;border-radius:10px;padding:11px 10px;font:inherit;background:white;color:var(--ink);min-width:0}input:focus,select:focus{outline:2px solid #b9d8ca;border-color:#6aa98a}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field{min-width:0}.full{grid-column:1/-1}
+.staffgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:9px}.staffcard{border:1px solid var(--line);border-radius:13px;padding:12px}.staffhead{display:flex;justify-content:space-between;align-items:center;gap:8px}.staffname{font-size:16px;font-weight:750}.pill{border-radius:20px;padding:4px 8px;font-size:11px;font-weight:750;background:#edf1f4;color:#52616d}.pill.ok{background:var(--greenbg);color:var(--green)}.pill.wait{background:var(--orangebg);color:var(--orange)}.pill.busy{background:var(--bluebg);color:var(--blue)}
+.booking{border:1px solid var(--line);border-radius:12px;padding:11px;margin:8px 0;display:flex;gap:10px;align-items:flex-start}.booking .time{font-weight:800;min-width:82px}.booking .detail{flex:1;min-width:0}.booking .detail strong{display:block}.booking .detail small{color:var(--muted)}.timeline{overflow-x:auto}.timeline table{border-collapse:separate;border-spacing:0;width:100%;min-width:620px;font-size:12px}.timeline th,.timeline td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}.timeline th{background:#f6f8fa;position:sticky;top:0}.slot{border-radius:7px;padding:6px;margin:2px 0;min-width:110px;background:#eaf2ff;border-left:3px solid #4a83c4}.slot.break{background:#fff3df;border-color:#d18a2f}.slot .sname{font-weight:750}.slot small{display:block;color:#4f6070;font-size:10px}.empty{color:#9aa5ae;font-size:11px;padding:7px}
+.hidden{display:none!important}.recommend{background:#e8f6ef;border:1px solid #cbe9d8;border-radius:13px;padding:13px;margin-top:10px}.recommend h3{margin:0 0 5px;color:#146c4a;font-size:15px}.recommend .big{font-size:24px;font-weight:800;color:#146c4a}.notice{background:#fff6e8;border:1px solid #f1dfbd;border-radius:10px;padding:10px;font-size:12px;color:#825216}
+hr{border:0;border-top:1px solid var(--line);margin:13px 0}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}.sectionhead h2{margin:0}
+.bottomadd{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;border-top:1px solid var(--line);padding:10px max(13px,calc((100vw - 1074px)/2));z-index:6;backdrop-filter:blur(8px)}.bottomadd button{width:100%;background:var(--green);font-size:15px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px}.inline{display:flex;gap:7px;align-items:center}.inline>*{flex:1}
+.toast{position:fixed;bottom:76px;left:50%;transform:translateX(-50%);background:#172b36;color:white;padding:10px 15px;border-radius:20px;font-size:13px;z-index:20;display:none;max-width:90%}
+@media(min-width:760px){main{padding-top:20px}.formgrid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.tabs{top:69px}}
+@media(max-width:430px){.grid{gap:6px}.stat{padding:9px}.stat strong{font-size:20px}.panel{padding:12px}.formgrid{gap:8px}.booking .time{min-width:68px}}
+</style>
+</head>
+<body>
+<header><div class="top"><div><h1 id="shopTitle">Smart Reception</h1><p>Massage Queue Manager · ระบบจัดคิวร้านนวด</p></div><span class="pill" style="background:#244553;color:white">LIVE QUEUE</span></div></header>
+<main>
+<nav class="tabs">
+<button class="tab active" data-tab="home">ภาพรวม</button><button class="tab" data-tab="schedule">ตารางเวลา</button><button class="tab" data-tab="add">เพิ่มลูกค้า</button><button class="tab" data-tab="history">ประวัติ</button><button class="tab" data-tab="settings">ตั้งค่าร้าน</button>
+</nav>
+
+<section id="home" class="view">
+<div class="panel"><div class="sectionhead"><h2>สถานะร้านวันนี้</h2><span class="muted" id="todayLabel"></span></div>
+<div class="grid"><div class="stat"><strong id="availableCount">0</strong><span>ว่าง / ใกล้ว่าง</span></div><div class="stat"><strong id="busyCount">0</strong><span>กำลังนวด</span></div><div class="stat"><strong id="servedCount">0</strong><span>คิววันนี้</span></div></div></div>
+<div class="panel"><div class="sectionhead"><h2>พนักงาน · ใครรับลูกค้าได้เมื่อไหร่</h2><span class="muted">คำนวณอัตโนมัติ</span></div><div id="staffStatus" class="staffgrid"></div></div>
+<div class="panel"><h2>Smart Walk-in · ประเมินคิวลูกค้าใหม่</h2>
+<div class="formgrid"><div class="field"><label>ประเภทการนวด</label><select id="walkService"></select></div><div class="field"><label>ระยะเวลา</label><select id="walkDuration"></select></div></div>
+<div id="walkRecommendation"></div></div>
+<div class="panel"><h2>Booking Next · ลูกค้าจองรอบถัดไป</h2><div id="bookingRecommendation"></div></div>
+<div class="panel"><div class="sectionhead"><h2>คิววันนี้</h2><button class="small secondary" onclick="showTab('schedule')">ดูตารางเต็ม</button></div><div id="todayQueue"></div></div>
+</section>
+
+<section id="schedule" class="view hidden">
+<div class="panel"><div class="sectionhead"><h2>ตารางเวลาทั้งร้าน</h2><input style="max-width:155px" type="date" id="scheduleDate"></div><p class="muted">แสดงเวลานัดและเวลาเริ่มนวดจริงแยกกัน · ตารางจะคำนวณใหม่เมื่อแก้ไขคิว</p><div id="timeline" class="timeline"></div></div>
+</section>
+
+<section id="add" class="view hidden">
+<div class="panel"><h2 id="formTitle">เพิ่มลูกค้าใหม่</h2>
+<form id="bookingForm"><input type="hidden" id="editId">
+<div class="formgrid">
+<div class="field"><label>ประเภทลูกค้า</label><select id="kind"><option value="walkin">Walk-in</option><option value="booking">Appointment / จองล่วงหน้า</option></select></div>
+<div class="field"><label>ชื่อลูกค้า (ไม่บังคับ)</label><input id="customer" placeholder="ชื่อลูกค้า"></div>
+<div class="field"><label>ประเภทการนวด</label><select id="service" required></select></div>
+<div class="field"><label>ระยะเวลานวด (นาที)</label><select id="duration" required></select></div>
+<div class="field"><label>วันที่</label><input id="bookDate" type="date" required></div>
+<div class="field" id="appointmentField"><label>เวลาจอง (Booking)</label><input id="appointmentTime" type="time"><small class="muted">กรอกเวลานัดของลูกค้า</small></div>
+<div class="field"><label id="actualStartLabel">เวลาเริ่มนวดจริง</label><input id="startTime" type="time"><small class="muted" id="actualStartHelp">ถ้าไม่กรอก ระบบใช้เวลาจองเป็นเวลาเริ่มนวด</small></div>
+<div class="field"><label>วิธีเลือกพนักงาน</label><select id="staffMode"><option value="auto">อัตโนมัติ — ระบบเลือกคนที่เหมาะสม</option><option value="manual">เลือกพนักงานเอง</option></select></div>
+<div class="field hidden" id="manualStaffField"><label>เลือกพนักงาน</label><select id="staffSelect"></select></div>
+<div class="field full"><label>หมายเหตุ</label><input id="notes" placeholder="เช่น ลูกค้ามาสาย / ขอพนักงานคนเดิม"></div>
+</div>
+<div class="notice" style="margin:12px 0" id="timeRuleNotice">Booking: กรอกเวลาจองได้ และกรอกเวลาเริ่มนวดจริงเพิ่มได้ ถ้าไม่กรอกเวลาเริ่มจริง ระบบใช้เวลาจองเป็นเวลาเริ่มนวด ส่วน Walk-in ใช้เฉพาะเวลาเริ่มนวดจริง</div>
+<div class="actions"><button type="submit" class="green" id="saveButton">บันทึกคิว</button><button type="button" class="secondary" onclick="resetForm()">ล้างข้อมูล</button></div>
+<div id="formPreview" class="muted" style="margin-top:10px"></div>
+</form></div>
+</section>
+
+<section id="history" class="view hidden"><div class="panel"><div class="sectionhead"><h2>ประวัติการให้บริการ</h2><button class="small secondary" onclick="exportCSV()">ส่งออก CSV</button></div><div class="formgrid"><div><label>วันที่</label><input type="date" id="historyDate"></div><div><label>พนักงาน</label><select id="historyStaff"><option value="all">ทุกคน</option></select></div></div><div id="historyList" style="margin-top:12px"></div></div></section>
+
+<section id="settings" class="view hidden">
+<div class="panel"><h2>ตั้งค่าร้านและเวลาเปิด–ปิด</h2><div class="formgrid"><div class="field full"><label>ชื่อร้าน</label><input id="setShop"></div><div class="field"><label>เวลาเปิดร้าน</label><input type="time" id="openTime"></div><div class="field"><label>เวลาปิดร้าน</label><input type="time" id="closeTime"></div><div class="field"><label>เวลาเตรียมตัวหลังนวด (นาที)</label><input type="number" min="0" max="60" id="prepTime"></div></div><button class="green" style="margin-top:12px" onclick="saveShopSettings()">บันทึกการตั้งค่า</button></div>
+<div class="panel"><div class="sectionhead"><h2>จัดการพนักงาน</h2><button class="small green" onclick="addStaff()">+ เพิ่มพนักงาน</button></div><div id="staffSettings"></div></div>
+<div class="panel"><div class="sectionhead"><h2>จัดการประเภทการนวด</h2><button class="small green" onclick="addService()">+ เพิ่มบริการ</button></div><div id="serviceSettings"></div></div>
+<div class="panel"><h2>ข้อมูลและสำรองข้อมูล</h2><div class="actions"><button class="secondary" onclick="backupData()">ดาวน์โหลดข้อมูลสำรอง</button><button class="secondary" onclick="document.getElementById('restoreFile').click()">นำเข้าข้อมูลสำรอง</button><button class="red" onclick="clearAllData()">ล้างข้อมูลทั้งหมด</button><input type="file" id="restoreFile" accept="application/json" class="hidden"></div><p class="muted">ข้อมูลบันทึกในเบราว์เซอร์ของอุปกรณ์นี้ หากเปลี่ยนอุปกรณ์หรือเบราว์เซอร์ต้องสำรอง/นำเข้าข้อมูลเอง เวอร์ชันนี้ยังไม่ซิงก์หลายเครื่อง</p></div>
+</section>
+</main>
+<div class="bottomadd"><button onclick="newBooking()">＋ เพิ่มลูกค้า Walk-in / Booking</button></div><div id="toast" class="toast"></div>
+
+<script>
+const KEY='smartReception_v3';
+const defaultData={
+ settings:{shop:'Smart Reception',open:'09:00',close:'21:00',prep:0},
+ staff:[{id:'M',name:'M',active:true},{id:'P',name:'P',active:true},{id:'C',name:'C',active:true}],
+ services:[
+ {id:'s1',name:'Head, Neck & Shoulder',durations:[15,20,30]},
+ {id:'s2',name:'Foot Massage',durations:[30,45,60,75,90,120]},
+ {id:'s3',name:'Thai Deep Tissue',durations:[30,45,60,75,90,120]},
+ {id:'s4',name:'Thai Oil Massage',durations:[30,45,60,75,90,120]},
+ {id:'s5',name:'Aromatherapy',durations:[30,45,60,75,90,120]},
+ {id:'s6',name:'Pregnancy Massage',durations:[30,45,60,75,90,120]},
+ {id:'s7',name:'Remedial & Deep Tissue',durations:[30,45,60,75,90,120]},
+ {id:'s8',name:'Hot Stone + Hot Coconut Oil',durations:[60,75,90,120]}
+ ],bookings:[],history:[]
+};
+let data=load();
+function load(){try{return {...structuredClone(defaultData),...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){return structuredClone(defaultData)}}
+function save(){localStorage.setItem(KEY,JSON.stringify(data));renderAll()}
+function uid(){return 'b'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function today(){let d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function min(t){if(!t)return 0;let [h,m]=t.split(':').map(Number);return h*60+m}
+function clock(n){n=Math.max(0,Math.round(n));return `${String(Math.floor(n/60)%24).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(s){let e=document.getElementById('toast');e.textContent=s;e.style.display='block';setTimeout(()=>e.style.display='none',2400)}
+function staffName(id){return data.staff.find(s=>s.id===id)?.name||'ไม่ระบุ'}
+function serviceName(id){return data.services.find(s=>s.id===id)?.name||'บริการที่ถูกลบ'}
+function activeStaff(){return data.staff.filter(s=>s.active!==false)}
+function dayBookings(date){return data.bookings.filter(b=>b.date===date&&!b.cancelled)}
+function getEnd(b){return (b.start??min(b.startTime))+Number(b.duration)+Number(b.prep??data.settings.prep??0)}
+function scheduleFor(date){return dayBookings(date).slice().sort((a,b)=>a.start-b.start)}
+function calcStaff(staffId,date,from=min(data.settings.open)){
+ let jobs=scheduleFor(date).filter(b=>b.staffId===staffId).sort((a,b)=>a.start-b.start);
+ let cursor=from, conflict=false;
+ for(const j of jobs){if(j.start<cursor){conflict=true;cursor=Math.max(cursor,getEnd(j))}else cursor=Math.max(cursor,getEnd(j))}
+ return {available:cursor,conflict,jobs};
+}
+function earliestFor(duration,date,notBefore=min(data.settings.open),preferred='auto',excludeId=null){
+ let candidates=activeStaff().filter(s=>preferred==='auto'||s.id===preferred);
+ let options=candidates.map(s=>{
+  let jobs=scheduleFor(date).filter(b=>b.id!==excludeId&&b.staffId===s.id).sort((a,b)=>a.start-b.start);
+  let cursor=Math.max(notBefore,min(data.settings.open));
+  // find earliest continuous gap that fits before next existing appointment
+  for(let j of jobs){
+   if(cursor+duration+Number(data.settings.prep)<j.start)break;
+   if(cursor<getEnd(j))cursor=getEnd(j);
+  }
+  return {staff:s,start:cursor,end:cursor+duration+Number(data.settings.prep),jobs};
+ });
+ options.sort((a,b)=>a.start-b.start||a.jobs.length-b.jobs.length);
+ return options[0]||null;
+}
+function getStaffStatus(date){
+ let now=new Date(), current=now.getHours()*60+now.getMinutes();
+ let base=date===today()?current:min(data.settings.open);
+ return activeStaff().map(s=>{
+  let active=scheduleFor(date).find(b=>b.staffId===s.id&&b.start<=base&&getEnd(b)>base);
+  let next=active?getEnd(active):calcStaff(s.id,date,base).available;
+  return {staff:s,active,next,wait:Math.max(0,next-base)};
+ });
+}
+function options(el,arr,selected){el.innerHTML=arr.map(x=>`<option value="${esc(x.value)}" ${String(x.value)===String(selected)?'selected':''}>${esc(x.label)}</option>`).join('')}
+function fillServiceSelects(){
+ let serviceOptions=data.services.map(s=>({value:s.id,label:s.name}));
+ ['service','walkService'].forEach(id=>options(document.getElementById(id),serviceOptions,document.getElementById(id).value||serviceOptions[0]?.value));
+ updateDurationSelect('service','duration');updateDurationSelect('walkService','walkDuration');
+}
+function updateDurationSelect(serviceId,durationId){
+ let s=data.services.find(x=>x.id===document.getElementById(serviceId).value);let arr=(s?.durations||[]).map(n=>({value:n,label:n+' นาที'}));options(document.getElementById(durationId),arr,document.getElementById(durationId).value||arr[0]?.value);
+}
+
+function updateBookingFields(){
+ const isBooking=document.getElementById('kind').value==='booking';
+ document.getElementById('appointmentField').classList.toggle('hidden',!isBooking);
+ document.getElementById('actualStartLabel').textContent=isBooking?'เวลาเริ่มนวดจริง (ไม่บังคับ)':'เวลาเริ่มนวดจริง';
+ document.getElementById('actualStartHelp').textContent=isBooking?'ถ้าไม่กรอก ระบบใช้เวลาจองเป็นเวลาเริ่มนวด':'Walk-in กรอกเฉพาะเวลาเริ่มนวดจริง';
+ if(!isBooking)document.getElementById('appointmentTime').value='';
+}
+function updateStaffMode(){
+ document.getElementById('manualStaffField').classList.toggle('hidden',document.getElementById('staffMode').value!=='manual');
+}
+function populateStaffSelect(){
+ const el=document.getElementById('staffSelect'),old=el.value;
+ el.innerHTML=activeStaff().map(x=>`<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('');
+ if(activeStaff().some(x=>x.id===old))el.value=old;
+}
+document.getElementById('kind').addEventListener('change',updateBookingFields);
+document.getElementById('staffMode').addEventListener('change',updateStaffMode);
+
+function showTab(tab){document.querySelectorAll('.view').forEach(v=>v.classList.toggle('hidden',v.id!==tab));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));if(tab==='add'&&!document.getElementById('editId').value)document.getElementById('bookDate').value=today()}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function newBooking(){resetForm();document.getElementById('kind').value='walkin';showTab('add')}
+document.getElementById('service').addEventListener('change',()=>updateDurationSelect('service','duration'));
+document.getElementById('walkService').addEventListener('change',()=>{updateDurationSelect('walkService','walkDuration');renderWalkRec()});
+document.getElementById('walkDuration').addEventListener('change',renderWalkRec);
+document.getElementById('scheduleDate').addEventListener('change',renderTimeline);
+document.getElementById('historyDate').addEventListener('change',renderHistory);
+document.getElementById('historyStaff').addEventListener('change',renderHistory);
+document.getElementById('walkRecommendation').addEventListener('click',e=>{let b=e.target.closest('[data-assign]');if(b){let [staffId,start]=b.dataset.assign.split('|');newBooking();document.getElementById('staffMode').value='manual';populateStaffSelect();document.getElementById('staffSelect').value=staffId;updateStaffMode();document.getElementById('startTime').value=clock(Number(start));document.getElementById('appointmentTime').value=clock(Number(start));document.getElementById('service').value=document.getElementById('walkService').value;updateDurationSelect('service','duration');document.getElementById('duration').value=document.getElementById('walkDuration').value;showTab('add')}});
+document.getElementById('bookingRecommendation').addEventListener('click',e=>{let b=e.target.closest('[data-assign-book]');if(b){let [bookingId,staffId,start]=b.dataset.assignBook.split('|');let target=data.bookings.find(x=>x.id===bookingId);if(!target)return;target.staffId=staffId;target.start=Number(start);target.startTime=clock(Number(start));save();toast('จัดพนักงานให้ Booking แล้ว')}});
+document.getElementById('bookingForm').addEventListener('submit',e=>{
+ e.preventDefault();let id=document.getElementById('editId').value,date=document.getElementById('bookDate').value;
+ let duration=Number(document.getElementById('duration').value),kind=document.getElementById('kind').value;
+ let mode=document.getElementById('staffMode').value,preferred=mode==='manual'?document.getElementById('staffSelect').value:'auto';
+ let typed=document.getElementById('startTime').value,arrival=kind==='booking'?document.getElementById('appointmentTime').value:'';
+ // Booking: if actual start is blank, use appointment time. Walk-in uses actual start only.
+ let start=typed?min(typed):(kind==='booking'&&arrival?min(arrival):null);
+ let existing=id?data.bookings.find(b=>b.id===id):null;
+ let result=earliestFor(duration,date,start!==null?start:min(data.settings.open),preferred,id||null);
+ if(!result){toast('ยังไม่มีพนักงานที่เปิดใช้งาน');return}
+ if(start===null)start=result.start;
+ let staffId=preferred==='auto'?result.staff.id:preferred;
+ let conflict=data.bookings.some(b=>b.date===date&&b.staffId===staffId&&b.id!==id&&!b.cancelled&&start<getEnd(b)&&start+duration+Number(data.settings.prep)>b.start);
+ if(conflict){alert('เวลานี้ชนกับคิวเดิม กรุณาเลือกเวลาอื่นหรือเปลี่ยนพนักงาน เพื่อไม่ให้คิวซ้อนกัน');return}
+ let item={id:id||uid(),kind,customer:document.getElementById('customer').value.trim(),serviceId:document.getElementById('service').value,duration,date,appointment:arrival?min(arrival):null,appointmentTime:arrival||'',start,startTime:clock(start),staffId,notes:document.getElementById('notes').value,prep:Number(data.settings.prep)||0,created:existing?.created||Date.now()};
+ if(existing){Object.assign(existing,item)}else data.bookings.push(item);
+ save();resetForm();showTab('home');toast(existing?'แก้ไขคิวแล้ว':'เพิ่มคิวแล้ว');
+});
+function resetForm(){document.getElementById('bookingForm').reset();document.getElementById('editId').value='';document.getElementById('formTitle').textContent='เพิ่มลูกค้าใหม่';document.getElementById('saveButton').textContent='บันทึกคิว';document.getElementById('bookDate').value=today();document.getElementById('staffMode').value='auto';document.getElementById('staffSelect').value=activeStaff()[0]?.id||'';updateStaffMode();updateBookingFields();document.getElementById('startTime').value='';document.getElementById('appointmentTime').value='';fillServiceSelects()}
+function editBooking(id){let b=data.bookings.find(x=>x.id===id);if(!b)return;showTab('add');document.getElementById('editId').value=id;document.getElementById('formTitle').textContent='แก้ไขคิวลูกค้า';document.getElementById('saveButton').textContent='บันทึกการแก้ไข';document.getElementById('kind').value=b.kind;document.getElementById('customer').value=b.customer||'';document.getElementById('service').value=b.serviceId;updateDurationSelect('service','duration');document.getElementById('duration').value=b.duration;document.getElementById('bookDate').value=b.date;document.getElementById('appointmentTime').value=b.appointmentTime||'';document.getElementById('startTime').value=b.startTime||clock(b.start);document.getElementById('staffMode').value='manual';populateStaffSelect();document.getElementById('staffSelect').value=b.staffId;updateStaffMode();updateBookingFields();document.getElementById('notes').value=b.notes||''}
+function completeBooking(id){let b=data.bookings.find(x=>x.id===id);if(!b)return;if(!confirm('ย้ายคิวนี้ไปประวัติว่าให้บริการแล้ว?'))return;data.history.unshift({...b,completedAt:Date.now()});data.bookings=data.bookings.filter(x=>x.id!==id);save();toast('บันทึกประวัติแล้ว')}
+function cancelBooking(id){if(!confirm('ยกเลิกคิวนี้?'))return;data.bookings=data.bookings.filter(x=>x.id!==id);save()}
+function renderWalkRec(){
+ let date=today(),dur=Number(document.getElementById('walkDuration').value)||60,now=new Date(),base=now.getHours()*60+now.getMinutes();
+ let opts=activeStaff().map(s=>{let r=earliestFor(dur,date,base,s.id);return r?{...r,wait:r.start-base}:null}).filter(Boolean).sort((a,b)=>a.start-b.start);
+ let el=document.getElementById('walkRecommendation');if(!opts.length){el.innerHTML='<p class="muted">ยังไม่มีพนักงานที่เปิดใช้งาน</p>';return}
+ let first=opts[0],canFit=first.start+dur<=min(data.settings.close);
+ el.innerHTML=`<div class="recommend"><h3>${canFit?'แนะนำรับ Walk-in':'ตรวจสอบเวลาปิดร้าน'}</h3><div class="big">${first.wait<=0?'เริ่มได้ทันที':'รอ '+first.wait+' นาที'}</div><b>${esc(first.staff.name)}</b> · เริ่มประมาณ ${clock(first.start)}<p class="muted">บริการ ${dur} นาที · คาดว่าเสร็จ ${clock(first.start+dur)}</p><button class="green" data-assign="${first.staff.id}|${first.start}">เลือกพนักงานนี้ / เพิ่มลูกค้า</button></div><div style="margin-top:9px">${opts.slice(1).map(o=>`<div class="booking"><div class="time">${clock(o.start)}</div><div class="detail"><strong>${esc(o.staff.name)} · รอ ${Math.max(0,o.wait)} นาที</strong><small>เสร็จประมาณ ${clock(o.end)}</small></div></div>`).join('')}</div>`;
+}
+function renderBookingRec(){
+ let next=dayBookings(today()).filter(b=>b.kind==='booking').sort((a,b)=>a.start-b.start)[0],el=document.getElementById('bookingRecommendation');
+ if(!next){el.innerHTML='<p class="muted">ยังไม่มี Appointment ถัดไปในวันนี้</p>';return}
+ let dur=next.duration,notBefore=Math.max(min(data.settings.open),next.appointment??next.start);
+ let opts=activeStaff().map(s=>{let r=earliestFor(dur,next.date,notBefore,s.id,next.id);return r?{...r}:null}).filter(Boolean).sort((a,b)=>a.start-b.start);
+ el.innerHTML=`<div class="booking"><div class="time">${clock(next.appointment??next.start)}</div><div class="detail"><strong>${esc(next.customer||'ลูกค้าจอง')} · ${esc(serviceName(next.serviceId))}</strong><small>${next.duration} นาที · เวลาที่ลงไว้ ${next.startTime} · ปัจจุบัน ${esc(staffName(next.staffId))}</small></div><button class="small secondary" onclick="editBooking('${next.id}')">แก้ไข</button></div>`+(opts.length?`<div class="recommend"><h3>พนักงานที่เหมาะกับ Booking นี้</h3><div class="big">${esc(opts[0].staff.name)}</div><p class="muted">เริ่มได้ ${clock(opts[0].start)} · จบ ${clock(opts[0].end)}</p><button class="green" data-assign-book="${next.id}|${opts[0].staff.id}|${opts[0].start}">จัดพนักงานให้ Booking นี้</button><p class="muted">ทางเลือก: ${opts.slice(1).map(o=>esc(o.staff.name)+' ('+clock(o.start)+')').join(' · ')||'ไม่มี'}</p></div>`:'');
+}
+function renderHome(){
+ document.getElementById('shopTitle').textContent=data.settings.shop||'Smart Reception';document.getElementById('todayLabel').textContent=new Date().toLocaleDateString('th-TH',{day:'numeric',month:'short',year:'numeric'});
+ let bs=dayBookings(today()),st=getStaffStatus(today()),now=new Date(),cur=now.getHours()*60+now.getMinutes();
+ document.getElementById('availableCount').textContent=st.filter(x=>!x.active||getEnd(x.active)<=cur).length;
+ document.getElementById('busyCount').textContent=st.filter(x=>x.active).length;
+ document.getElementById('servedCount').textContent=bs.length;
+ document.getElementById('staffStatus').innerHTML=st.map(x=>`<div class="staffcard"><div class="staffhead"><span class="staffname">${esc(x.staff.name)}</span><span class="pill ${x.active?'busy':x.wait<=10?'ok':'wait'}">${x.active?'กำลังนวด':x.wait<=0?'ว่าง':'ใกล้ว่าง'}</span></div><p style="margin:8px 0 2px;font-weight:750">${x.active?'เสร็จ '+clock(getEnd(x.active)):'รับลูกค้าได้ '+clock(x.next)}</p><small class="muted">${x.active?serviceName(x.active.serviceId)+' · '+x.active.duration+' นาที':x.wait<=0?'พร้อมรับลูกค้า':'อีก '+x.wait+' นาที'}</small></div>`).join('');
+ renderWalkRec();renderBookingRec();
+ document.getElementById('todayQueue').innerHTML=bs.sort((a,b)=>a.start-b.start).map(b=>bookingHTML(b)).join('')||'<p class="muted">ยังไม่มีคิววันนี้</p>';
+}
+function bookingHTML(b){return `<div class="booking"><div class="time">${clock(b.start)}<small style="display:block;color:#89949e">${b.appointmentTime?'นัด '+b.appointmentTime:b.kind==='walkin'?'Walk-in':'Booking'}</small></div><div class="detail"><strong>${esc(b.customer||'ลูกค้า')} · ${esc(serviceName(b.serviceId))}</strong><small>${b.duration} นาที · ${esc(staffName(b.staffId))} · เสร็จประมาณ ${clock(getEnd(b))}</small>${b.notes?`<small>${esc(b.notes)}</small>`:''}</div><div class="actions"><button class="small secondary" onclick="editBooking('${b.id}')">แก้ไข</button><button class="small green" onclick="completeBooking('${b.id}')">เสร็จ</button><button class="small red" onclick="cancelBooking('${b.id}')">ยกเลิก</button></div></div>`}
+function renderTimeline(){
+ let date=document.getElementById('scheduleDate').value||today(),staff=activeStaff(),bs=dayBookings(date);
+ let html='<table><thead><tr><th>พนักงาน</th><th>ตารางงานตามเวลา</th></tr></thead><tbody>';
+ staff.forEach(s=>{let jobs=bs.filter(b=>b.staffId===s.id).sort((a,b)=>a.start-b.start);html+=`<tr><th>${esc(s.name)}</th><td>${jobs.length?jobs.map(b=>`<div class="slot"><span class="sname">${clock(b.start)}–${clock(getEnd(b))}</span><small>${esc(serviceName(b.serviceId))} · ${b.duration} นาที</small><small>${b.kind==='walkin'?'Walk-in':'Booking'} · นัด ${b.appointmentTime||'-'} · ${esc(b.customer||'ลูกค้า')}</small><div class="actions" style="margin-top:5px"><button class="small secondary" onclick="editBooking('${b.id}')">แก้ไข</button><button class="small red" onclick="cancelBooking('${b.id}')">ลบ</button></div></div>`).join(''):'<span class="empty">ยังไม่มีคิว</span>'}</td></tr>`});html+='</tbody></table>';document.getElementById('timeline').innerHTML=html;
+}
+function renderHistory(){
+ let date=document.getElementById('historyDate').value,staff=document.getElementById('historyStaff').value||'all';
+ let arr=data.history.filter(b=>(!date||b.date===date)&&(staff==='all'||b.staffId===staff));
+ document.getElementById('historyList').innerHTML=arr.map(b=>`<div class="booking"><div class="time">${esc(b.date)}<small>${b.startTime}</small></div><div class="detail"><strong>${esc(b.customer||'ลูกค้า')} · ${esc(serviceName(b.serviceId))}</strong><small>${esc(staffName(b.staffId))} · ${b.duration} นาที</small></div><button class="small red" onclick="deleteHistory('${b.id}')">ลบ</button></div>`).join('')||'<p class="muted">ไม่พบประวัติ</p>';
+}
+function deleteHistory(id){if(confirm('ลบประวัตินี้ถาวร?')){data.history=data.history.filter(x=>x.id!==id);save()}}
+function renderSettings(){
+ document.getElementById('setShop').value=data.settings.shop;document.getElementById('openTime').value=data.settings.open;document.getElementById('closeTime').value=data.settings.close;document.getElementById('prepTime').value=data.settings.prep;
+ document.getElementById('staffSettings').innerHTML=data.staff.map(s=>`<div class="booking"><div class="detail"><input aria-label="ชื่อพนักงาน" id="staff-${s.id}" value="${esc(s.name)}"><small>ID: ${esc(s.id)}</small></div><button class="small secondary" onclick="renameStaff('${s.id}')">บันทึกชื่อ</button><button class="small red" onclick="removeStaff('${s.id}')">ลบ</button></div>`).join('');
+ document.getElementById('serviceSettings').innerHTML=data.services.map(s=>`<div class="panel" style="padding:10px;margin:8px 0;box-shadow:none"><label>ชื่อบริการ</label><input id="svcname-${s.id}" value="${esc(s.name)}"><label style="margin-top:8px">ระยะเวลา (นาที) คั่นด้วยเครื่องหมายจุลภาค</label><input id="svcdur-${s.id}" value="${s.durations.join(', ')}"><div class="actions" style="margin-top:8px"><button class="small secondary" onclick="saveService('${s.id}')">บันทึก</button><button class="small red" onclick="removeService('${s.id}')">ลบบริการ</button></div></div>`).join('');
+ document.getElementById('historyStaff').innerHTML='<option value="all">ทุกคน</option>'+data.staff.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+function saveShopSettings(){data.settings.shop=document.getElementById('setShop').value.trim()||'Smart Reception';data.settings.open=document.getElementById('openTime').value||'09:00';data.settings.close=document.getElementById('closeTime').value||'21:00';data.settings.prep=Math.max(0,Number(document.getElementById('prepTime').value)||0);save();toast('บันทึกการตั้งค่าร้านแล้ว')}
+function renameStaff(id){let s=data.staff.find(x=>x.id===id),n=document.getElementById('staff-'+id).value.trim();if(!n)return toast('กรุณาใส่ชื่อพนักงาน');s.name=n;save();toast('แก้ไขชื่อแล้ว')}
+function addStaff(){let name=prompt('ชื่อพนักงานใหม่');if(!name?.trim())return;data.staff.push({id:uid(),name:name.trim(),active:true});save()}
+function removeStaff(id){if(!confirm('ลบพนักงานนี้? คิวและประวัติเก่าจะยังเก็บชื่อเดิมเป็นรหัสอ้างอิง'))return;data.staff=data.staff.filter(s=>s.id!==id);data.bookings.forEach(b=>{if(b.staffId===id)b.staffId=''});save()}
+function saveService(id){let s=data.services.find(x=>x.id===id),name=document.getElementById('svcname-'+id).value.trim(),ds=document.getElementById('svcdur-'+id).value.split(',').map(x=>Number(x.trim())).filter(x=>Number.isFinite(x)&&x>0&&x<=240);if(!name||!ds.length)return toast('กรุณาตรวจชื่อและระยะเวลา');s.name=name;s.durations=[...new Set(ds)].sort((a,b)=>a-b);save();toast('บันทึกบริการแล้ว')}
+function addService(){let name=prompt('ชื่อบริการใหม่');if(!name?.trim())return;let ds=prompt('ระยะเวลานาที คั่นด้วยจุลภาค','30, 60, 90');if(!ds)return;let durations=ds.split(',').map(Number).filter(n=>n>0&&n<=240);if(!durations.length)return toast('ระยะเวลาไม่ถูกต้อง');data.services.push({id:uid(),name:name.trim(),durations:[...new Set(durations)].sort((a,b)=>a-b)});save()}
+function removeService(id){if(!confirm('ลบบริการนี้? ประวัติเก่ายังคงอยู่'))return;data.services=data.services.filter(s=>s.id!==id);save()}
+function renderAll(){fillServiceSelects();populateStaffSelect();updateBookingFields();updateStaffMode();renderHome();renderTimeline();renderHistory();renderSettings()}
+function exportCSV(){let rows=[['วันที่','ประเภท','ลูกค้า','บริการ','ระยะเวลา','เวลานัด','เวลาเริ่มจริง','พนักงาน'],...data.history.map(b=>[b.date,b.kind,b.customer,serviceName(b.serviceId),b.duration,b.appointmentTime,b.startTime,staffName(b.staffId)])];let csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='massage-history.csv';a.click();URL.revokeObjectURL(a.href)}
+function backupData(){let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download='smart-reception-backup.json';a.click();URL.revokeObjectURL(a.href)}
+document.getElementById('restoreFile').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;try{let d=JSON.parse(await f.text());if(!d.staff||!d.services||!d.bookings)throw Error();if(confirm('นำเข้าข้อมูลนี้และแทนที่ข้อมูลปัจจุบัน?')){data=d;save();toast('นำเข้าข้อมูลสำเร็จ')}}catch(err){alert('ไฟล์ไม่ถูกต้อง')}e.target.value=''});
+function clearAllData(){if(confirm('ยืนยันลบคิว ประวัติ และข้อมูลร้านทั้งหมด? ไม่สามารถย้อนกลับได้')){data=structuredClone(defaultData);save();toast('ล้างข้อมูลแล้ว')}}
+document.getElementById('scheduleDate').value=today();document.getElementById('bookDate').value=today();renderAll();
+</script>
+</body></html>
